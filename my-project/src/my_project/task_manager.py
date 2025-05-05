@@ -16,7 +16,9 @@ from google_a2a.common.types import (
   TaskStatus,
   TaskStatusUpdateEvent,
 )
-from my_project.agent import create_ollama_agent, run_ollama
+from langchain_google_genai import ChatGoogleGenerativeAI
+from langgraph.prebuilt import create_react_agent
+from my_project.agent import create_ollama_agent, run_ollama, get_tools_mcp
 
 class MyAgentTaskManager(InMemoryTaskManager):
   def __init__(
@@ -31,7 +33,10 @@ class MyAgentTaskManager(InMemoryTaskManager):
         ollama_model=ollama_model
       )
     else:
-      self.ollama_agent = None
+      model = ChatGoogleGenerativeAI(model="gemini-2.0-flash")
+      tools=asyncio.run(get_tools_mcp())
+      print("\n\n",tools,"\n\n")
+      self.ollama_agent=create_react_agent(model,tools)
 
   async def on_send_task(self, request: SendTaskRequest) -> SendTaskResponse:
     # Upsert a task stored by InMemoryTaskManager
