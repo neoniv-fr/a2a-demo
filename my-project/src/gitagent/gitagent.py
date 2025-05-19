@@ -29,10 +29,10 @@ class ResponseFormat(BaseModel):
     message: str
 
 
-class CodeAgent:
+class GitAgent:
     SYSTEM_INSTRUCTION = (
-        'You are a software engineering assistant that helps with coding tasks.'
-        "You can read, write and modify with Read and Write tool to solve a bug, adding a feature..."
+        'You are a software engineering assistant that helps with git tasks.'
+        "You can use git command with Bash tool to a repository"
         "You can use your tools to use git if the user asks"
         'Set response status to input_required if the user needs to provide more information.'
         'Set response status to error if there is an error while processing the request.'
@@ -41,8 +41,16 @@ class CodeAgent:
 
     def __init__(self):
         self.model = ChatGoogleGenerativeAI(model='gemini-2.0-flash')
-        # self.tools = asyncio.run(self.get_tools_mcp())
-        self.tools = asyncio.run(self.get_tools_mcp())
+        client = MultiServerMCPClient(
+            {
+                "git": {
+                    "command": "claude",
+                    "args": ["mcp", "serve"],
+                    "transport": "stdio",
+                },
+            }
+        )
+        self.tools = asyncio.run(client.get_tools())
         # print("\n\nTOOLS MCP CLAUDE CODE", self.tools, "/n/n")
         self.graph = create_react_agent(
             self.model,
@@ -52,24 +60,6 @@ class CodeAgent:
             response_format=ResponseFormat,
         )
         logger.info(self.graph.get_graph())
-    
-    async def get_tools_mcp(self):
-        server_params = StdioServerParameters(
-            command="claude",
-            # Make sure to update to the full absolute path to your math_server.py file
-            args=["mcp", "serve"],
-            # cwd="/Users/neoniv/Documents/tutoA2A/my-project/src/my_project",
-        )
-        async with stdio_client(server_params) as (read, write):
-            async with ClientSession(read, write) as session:
-                # Initialize the connection
-                await session.initialize()
-
-                # Get tools
-                tools = await load_mcp_tools(session)
-                # print("\n\nTOOLS MCP CLAUDE CODE", tools, "/n/n")
-
-        return tools
 
     async def ainvoke(self, query, sessionId) -> str:
         config = {'configurable': {'thread_id': sessionId}}
@@ -82,9 +72,8 @@ class CodeAgent:
 
         client = MultiServerMCPClient(
             {
-                "math": {
+                "git": {
                     "command": "claude",
-                    # Make sure to update to the full absolute path to your math_server.py file
                     "args": ["mcp", "serve"],
                     "transport": "stdio",
                 },

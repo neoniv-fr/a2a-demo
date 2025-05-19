@@ -1,28 +1,24 @@
 import logging
 
 import click
-#from dotenv import load_dotenv
-# import google_a2a
 from common.types import AgentSkill, AgentCapabilities, AgentCard
 from common.server import A2AServer
-from my_project.codeagent import CodeAgent
-from my_project.task_manager import MyAgentTaskManager
+from codeagent import CodeAgent
+from task_manager import MyAgentTaskManager
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 @click.command()
 @click.option("--host", default="localhost")
-@click.option("--port", default=10002)
-@click.option("--ollama-host", default="http://127.0.0.1:11434")
-@click.option("--ollama-model", default=None)
-def main(host, port, ollama_host, ollama_model):
+@click.option("--port", default=10100)
+def main(host, port):
   skill = AgentSkill(
     id="my-project-code-skill",
     name="Code Tool",
-    description="Generate or modify code, use bash commands",
-    tags=["bash", "git", "code"],
-    examples=["Can you solve this error ?", "what's 2x3"],
+    description="Generate or modify code",
+    tags=["bash", "code"],
+    examples=["Can you solve this error ?"],
     inputModes=["text"],
     outputModes=["text"],
   )
@@ -31,7 +27,7 @@ def main(host, port, ollama_host, ollama_model):
   )
   agent_card = AgentCard(
     name="Code Agent",
-    description="This agent can generate and modify code. He can also use bash to use git or other.",
+    description="This agent can generate and modify code.",
     url=f"http://{host}:{port}/",
     version="0.1.0",
     defaultInputModes=["text"],
@@ -42,8 +38,6 @@ def main(host, port, ollama_host, ollama_model):
   logging.info(agent_card)
 
   task_manager = MyAgentTaskManager(
-    ollama_host=ollama_host,
-    ollama_model=ollama_model,
     agent=CodeAgent()
   )
   server = A2AServer(
