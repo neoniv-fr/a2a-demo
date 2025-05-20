@@ -67,7 +67,7 @@ class CodeAgent:
 
     async def stream(self, query, sessionId) -> AsyncIterable[dict[str, Any]]:
         inputs = {'messages': [('user', query)]}
-        config = {'configurable': {'thread_id': sessionId}}
+        config = {'configurable': {'thread_id': sessionId}, 'recursion_limit': 100}
 
         client = MultiServerMCPClient(
             {

@@ -15,7 +15,8 @@ uv add langchain-mcp-adapters
 
 # Run
 ```
+cd src
 source .venv/bin/activate (one time)
-uv run my-project
+uv run codeagent
 uv run google-a2a-cli --agent http://localhost:10002
 ```
