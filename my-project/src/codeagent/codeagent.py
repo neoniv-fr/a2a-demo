@@ -105,7 +105,7 @@ class CodeAgent:
                 yield {
                     'is_task_complete': False,
                     'require_user_input': False,
-                    'content': 'Processing the exchange rates..',
+                    'content': ToolMessage.content,
                 }
 
         yield self.get_agent_response(config)
