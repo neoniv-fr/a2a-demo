@@ -34,13 +34,14 @@ class GitAgent:
         'You are a software engineering assistant that helps with git tasks.'
         "You can use git command with Bash tool to a repository"
         "You can use your tools to use git if the user asks"
+        "Don't modify code, you can only execute git commands in Bash"
         'Set response status to input_required if the user needs to provide more information.'
         'Set response status to error if there is an error while processing the request.'
         'Set response status to completed if the request is complete.'
     )
 
     def __init__(self):
-        self.model = ChatGoogleGenerativeAI(model='gemini-2.0-flash')
+        self.model = ChatGoogleGenerativeAI(model='gemini-2.0-flash-lite')
         client = MultiServerMCPClient(
             {
                 "git": {
@@ -68,7 +69,7 @@ class GitAgent:
 
     async def stream(self, query, sessionId) -> AsyncIterable[dict[str, Any]]:
         inputs = {'messages': [('user', query)]}
-        config = {'configurable': {'thread_id': sessionId}}
+        config = {'configurable': {'thread_id': sessionId}, 'recursion_limit': 100}
 
         client = MultiServerMCPClient(
             {
@@ -100,13 +101,13 @@ class GitAgent:
                 yield {
                     'is_task_complete': False,
                     'require_user_input': False,
-                    'content': 'Looking up the exchange rates...',
+                    'content': str(message),
                 }
             elif isinstance(message, ToolMessage):
                 yield {
                     'is_task_complete': False,
                     'require_user_input': False,
-                    'content': 'Processing the exchange rates..',
+                    'content': str(message),
                 }
 
         yield self.get_agent_response(config)

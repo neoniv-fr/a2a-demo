@@ -39,7 +39,7 @@ class CodeAgent:
     )
 
     def __init__(self):
-        self.model = ChatGoogleGenerativeAI(model='gemini-2.0-flash')
+        self.model = ChatGoogleGenerativeAI(model='gemini-2.0-flash-lite')
         client = MultiServerMCPClient(
             {
                 "code": {
@@ -69,6 +69,7 @@ class CodeAgent:
         inputs = {'messages': [('user', query)]}
         config = {'configurable': {'thread_id': sessionId}, 'recursion_limit': 100}
 
+        """
         client = MultiServerMCPClient(
             {
                 "code": {
@@ -88,6 +89,7 @@ class CodeAgent:
             prompt=self.SYSTEM_INSTRUCTION,
             response_format=ResponseFormat,
         )
+        """
 
         async for item in self.graph.astream(inputs, config, stream_mode='values'):
             message = item['messages'][-1]
@@ -99,13 +101,13 @@ class CodeAgent:
                 yield {
                     'is_task_complete': False,
                     'require_user_input': False,
-                    'content': 'Looking up the exchange rates...',
+                    'content': str(message),
                 }
             elif isinstance(message, ToolMessage):
                 yield {
                     'is_task_complete': False,
                     'require_user_input': False,
-                    'content': 'Processing the exchange rates..',
+                    'content': str(message),
                 }
 
         yield self.get_agent_response(config)

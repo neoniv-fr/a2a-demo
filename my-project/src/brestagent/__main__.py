@@ -3,7 +3,7 @@ import logging
 import click
 from common.types import AgentSkill, AgentCapabilities, AgentCard
 from common.server import A2AServer
-from gitagent import GitAgent
+from brestagent import BrestExpertAgent
 from task_manager import MyAgentTaskManager
 
 logging.basicConfig(level=logging.INFO)
@@ -11,14 +11,14 @@ logger = logging.getLogger(__name__)
 
 @click.command()
 @click.option("--host", default="localhost")
-@click.option("--port", default=10101)
+@click.option("--port", default=10030)
 def main(host, port):
   skill = AgentSkill(
-    id="git_skill",
-    name="Git Tool",
-    description="Interact with git",
-    tags=["git", "push", "commit", "status"],
-    examples=["Can you commit this change ?"],
+    id="brest_skill",
+    name="Brest tool",
+    description="Obtenir des informations sur Brest",
+    tags=["Brest", "culture", "histoire", "lieu", "événement"],
+    examples=["Où se trouve la gare ?"],
     inputModes=["text"],
     outputModes=["text"],
   )
@@ -26,8 +26,8 @@ def main(host, port):
     streaming=True, pushNotifications=True
   )
   agent_card = AgentCard(
-    name="Git Agent",
-    description="This agent can use git commands likes commit, push, clone, status, pull...",
+    name="Brest Expert Agent",
+    description="Cet agent peut répondre à des questions sur la ville de Brest",
     url=f"http://{host}:{port}/",
     version="0.1.0",
     defaultInputModes=["text"],
@@ -38,7 +38,7 @@ def main(host, port):
   logging.info(agent_card)
 
   task_manager = MyAgentTaskManager(
-    agent=GitAgent()
+    agent=BrestExpertAgent()
   )
   server = A2AServer(
     agent_card=agent_card,
