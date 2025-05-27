@@ -14,12 +14,18 @@ uv add langchain-mcp-adapters
 ```
 
 
+# Brest Agent
+Pour utiliser le Brest Agent, il faut importer le serveur mcp : 
+```
+git clone https://github.com/Nijal-AI/Brest-mcp-server.git
+```
+Ensuite, dans "my-project/src/brestagent/brestagent.py", il faut modifier la ligne 75 avec son chemin absolue vers le fichier pour lancer le serveur.
+
 # Run
 ```
 cd src
 source .venv/bin/activate (one time)
-uv run codeagent
-uv run google-a2a-cli --agent http://localhost:10002
+uv run brestagent
 ```
 
 
