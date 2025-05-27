@@ -13,10 +13,29 @@ uv add langchain langchain-ollama langgraph
 uv add langchain-mcp-adapters
 ```
 
+
 # Run
 ```
 cd src
 source .venv/bin/activate (one time)
 uv run codeagent
 uv run google-a2a-cli --agent http://localhost:10002
+```
+
+
+# Host Agent
+Pour lancer un Host Agent
+```
+git clone https://github.com/google/A2A.git # Une seule fois
+
+cd A2A/demo/ui
+uv run main.py
+```
+Ensuite allez sur localhost:12000 et allez dans Agents et connectez vos agents
+
+Vous pouvez également utiliser les agents du repo A2A : 
+
+```
+cd A2A/samples/python/agents/<agent au choix>
+uv run .
 ```
