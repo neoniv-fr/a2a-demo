@@ -1,4 +1,5 @@
 import logging
+import asyncio
 
 from collections.abc import AsyncIterable
 from typing import Any, Literal
@@ -49,48 +50,34 @@ class BrestExpertAgent:
         'Set response status to error if the input indicates an error'
     )
 
-    def __init__(self):
-        # self.model = AzureChatOpenAI(azure_deployment="gpt-4o-mini")
-        self.model = ChatGoogleGenerativeAI(model='gemini-2.0-flash-lite')
-
-    async def create_graph(self):
-        """
-        server_params = StdioServerParameters(
-                command="python",
-                # Make sure to update to the full absolute path to your math_server.py file
-                args=["/Users/neoniv/Documents/tutoA2A/Brest-mcp-server/src/server.py"],
-            )
-
-        async with stdio_client(server_params) as (read, write):
-            async with ClientSession(read, write) as session:
-                # Initialize the connection
-                await session.initialize()
-                # Get tools
-                tools = await load_mcp_tools(session)
-        """
+    async def get_tools(self):
         client = MultiServerMCPClient(
             {
                 "brest": {
                     "command": "python",
-                    "args": ["/Users/neoniv/Documents/tutoA2A/Brest-mcp-server/src/server.py"],
-                    "url": "http://localhost:3001",
+                    "args": ["/Users/neoniv/Documents/tutoA2A/Brest-mcp-server/src/server.py", "stdio"],
+                    # "url": "http://localhost:3001",
                     "transport": "stdio",
                     # "transport": "streamable_http",
                 },
             }
         )
         tools = await client.get_tools()
-        # model = AzureChatOpenAI(azure_deployment="gpt-4o-mini")  # Azure deployment name
-        model = ChatGoogleGenerativeAI(model='gemini-2.0-flash-lite')
-        # Create and run the agent
-        self.agent = create_react_agent(model, tools, checkpointer=memory,prompt=self.SYSTEM_INSTRUCTION,response_format=ResponseFormat,)
+        return tools
+   
+    def __init__(self):
+        # self.model = AzureChatOpenAI(azure_deployment="gpt-4o-mini")
+        self.model = ChatGoogleGenerativeAI(model='gemini-2.0-flash-lite')
+        tools=asyncio.run(self.get_tools())
+        self.agent = create_react_agent(self.model, tools, checkpointer=memory,prompt=self.SYSTEM_INSTRUCTION,response_format=ResponseFormat,)
+
             
     async def stream(
         self, query: str, sessionId: str
     ) -> AsyncIterable[dict[str, Any]]:
         inputs: dict[str, Any] = {'messages': [('user', query)]}
         config: RunnableConfig = {'configurable': {'thread_id': sessionId}}
-        for item in self.agent.stream(inputs, config, stream_mode='values'):
+        async for item in self.agent.astream(inputs, config, stream_mode='values'):
             message = item['messages'][-1]
             if (
                 isinstance(message, AIMessage)

@@ -1,10 +1,18 @@
 import logging
+import httpx
 
 import click
-from common.types import AgentSkill, AgentCapabilities, AgentCard
-from common.server import A2AServer
+import uvicorn
+from a2a.server.apps import A2AStarletteApplication
+from a2a.server.request_handlers import DefaultRequestHandler
+from a2a.server.tasks import InMemoryPushNotifier, InMemoryTaskStore
+from a2a.types import (
+    AgentCapabilities,
+    AgentCard,
+    AgentSkill,
+)
 from brestagent import BrestExpertAgent
-from task_manager import MyAgentTaskManager
+from agent_executor import BrestAgentExecutor
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -37,16 +45,24 @@ def main(host, port):
   )
   logging.info(agent_card)
 
+  """
   task_manager = MyAgentTaskManager(
     agent=BrestExpertAgent()
   )
-  server = A2AServer(
-    agent_card=agent_card,
-    task_manager=task_manager,
-    host=host,
-    port=port,
+  """
+  # --8<-- [start:DefaultRequestHandler]
+  httpx_client = httpx.AsyncClient()
+  request_handler = DefaultRequestHandler(
+      agent_executor=BrestAgentExecutor(),
+      task_store=InMemoryTaskStore(),
+      push_notifier=InMemoryPushNotifier(httpx_client),
   )
-  server.start()
+  server = A2AStarletteApplication(
+      agent_card=agent_card, http_handler=request_handler
+  )
+
+  uvicorn.run(server.build(), host=host, port=port)
+  # --8<-- [end:DefaultRequestHandler]
 
 if __name__ == "__main__":
   main()
