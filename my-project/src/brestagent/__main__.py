@@ -1,8 +1,8 @@
 import logging
 import httpx
-
 import click
 import uvicorn
+
 from a2a.server.apps import A2AStarletteApplication
 from a2a.server.request_handlers import DefaultRequestHandler
 from a2a.server.tasks import InMemoryPushNotifier, InMemoryTaskStore
@@ -11,6 +11,7 @@ from a2a.types import (
     AgentCard,
     AgentSkill,
 )
+
 from brestagent import BrestExpertAgent
 from agent_executor import BrestAgentExecutor
 
@@ -30,6 +31,7 @@ def main(host, port):
     inputModes=["text"],
     outputModes=["text"],
   )
+  
   capabilities = AgentCapabilities(
     streaming=True, pushNotifications=True
   )
@@ -45,11 +47,6 @@ def main(host, port):
   )
   logging.info(agent_card)
 
-  """
-  task_manager = MyAgentTaskManager(
-    agent=BrestExpertAgent()
-  )
-  """
   # --8<-- [start:DefaultRequestHandler]
   httpx_client = httpx.AsyncClient()
   request_handler = DefaultRequestHandler(

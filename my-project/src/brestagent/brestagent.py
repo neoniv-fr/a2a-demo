@@ -4,8 +4,6 @@ import asyncio
 from collections.abc import AsyncIterable
 from typing import Any, Literal
 
-import httpx
-
 from langchain_core.messages import AIMessage, ToolMessage
 from langchain_core.runnables.config import (
     RunnableConfig,
@@ -35,7 +33,6 @@ class ResponseFormat(BaseModel):
 
 
 class BrestExpertAgent:
-    """Currency Conversion Agent Example."""
 
     SYSTEM_INSTRUCTION = (
         "Vous êtes un assistant expert de la ville de Brest. "
@@ -51,14 +48,13 @@ class BrestExpertAgent:
     )
 
     async def get_tools(self):
+        # Get and return tools from MCP server
         client = MultiServerMCPClient(
             {
                 "brest": {
                     "command": "python",
                     "args": ["/Users/neoniv/Documents/tutoA2A/Brest-mcp-server/src/server.py", "stdio"],
-                    # "url": "http://localhost:3001",
                     "transport": "stdio",
-                    # "transport": "streamable_http",
                 },
             }
         )
@@ -66,7 +62,6 @@ class BrestExpertAgent:
         return tools
    
     def __init__(self):
-        # self.model = AzureChatOpenAI(azure_deployment="gpt-4o-mini")
         self.model = ChatGoogleGenerativeAI(model='gemini-2.0-flash-lite')
         tools=asyncio.run(self.get_tools())
         self.agent = create_react_agent(self.model, tools, checkpointer=memory,prompt=self.SYSTEM_INSTRUCTION,response_format=ResponseFormat,)
